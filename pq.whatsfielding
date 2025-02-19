@@ -23,5 +23,3 @@ from #results
 order by AcctDir, client_nm, market_dsc, field_nm, fieldingbegin
 
 drop table #results
-
-Completion time: 2025-02-18T15:48:09.7036776-05:00
