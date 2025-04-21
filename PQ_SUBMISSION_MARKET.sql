@@ -52,12 +52,12 @@ ClientData AS (
     FROM DedupedMarkets
     WHERE rn = 1
 )
--- Final Selection
+-- Final Selection with Correct Order
 SELECT 
-    cd.Client_id,
     cd.client_nm,
-    cd.Market_id,
-    cd.market_dsc
+    cd.Client_id,
+    cd.market_dsc,
+    cd.Market_id
 FROM ClientData cd
 LEFT JOIN [HCMG_Dev_FromProd].[dbo].Client cl ON cd.Client_id = cl.Client_id
 WHERE (cl.datRemoved IS NULL OR cl.datRemoved >= CAST(GETDATE() AS DATETIME) OR cd.Client_id IS NULL)
