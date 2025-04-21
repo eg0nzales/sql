@@ -52,13 +52,26 @@ ClientData AS (
     FROM DedupedMarkets
     WHERE rn = 1
 )
--- Final Selection with Correct Order
+-- Final Selection with NULL handling and new ORDER BY
+-- Final Selection with Correct Column Order, '-' for NULLs, and 'Unassigned' first
+-- Final Selection with Correct Column Order, '-' for NULLs, 'Unassigned' first, and filter
+-- Final Selection with Correct Column Order, '-' for NULLs, 'Unassigned' first, and filter
 SELECT 
-    cd.client_nm,
-    cd.Client_id,
-    cd.market_dsc,
-    cd.Market_id
+    ISNULL(cd.client_nm, 'Unassigned') AS client_nm,
+    ISNULL(CAST(cd.Client_id AS VARCHAR), '-') AS Client_id,
+    cd.Market_id,
+    cd.market_dsc
 FROM ClientData cd
 LEFT JOIN [HCMG_Dev_FromProd].[dbo].Client cl ON cd.Client_id = cl.Client_id
-WHERE (cl.datRemoved IS NULL OR cl.datRemoved >= CAST(GETDATE() AS DATETIME) OR cd.Client_id IS NULL)
-ORDER BY cd.client_nm, cd.market_dsc;
+WHERE 
+    (cl.datRemoved IS NULL OR cl.datRemoved >= CAST(GETDATE() AS DATETIME) OR cd.Client_id IS NULL)
+    AND cd.market_dsc NOT LIKE 'xx%' 
+    AND cd.market_dsc NOT LIKE 'zz%'
+    AND NOT (
+        cd.client_nm IS NULL 
+        AND cd.market_dsc NOT LIKE '%-%'
+    )
+ORDER BY 
+    CASE WHEN cd.client_nm IS NULL THEN 0 ELSE 1 END, 
+    cd.client_nm,
+    cd.market_dsc;
